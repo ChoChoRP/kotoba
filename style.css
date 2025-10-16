@@ -1,32 +1,84 @@
+/* Menggunakan Tailwind CSS untuk styling dasar */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css');
+
+/* Menambahkan font kustom */
 body {
-  font-family: sans-serif;
-  text-align: center;
-  background: #f7f9fc;
-  color: #333;
-  margin: 20px;
+    font-family: 'Inter', sans-serif;
 }
 
-h1 {
-  color: #2b5fba;
+.font-jp {
+    font-family: 'Noto Sans JP', sans-serif;
 }
 
-table {
-  margin: 20px auto;
-  border-collapse: collapse;
-  width: 90%;
-  max-width: 800px;
-  background: white;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+/* Styling untuk kartu kosakata */
+.card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    overflow: hidden; /* Mencegah konten keluar dari border-radius */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Membuat kartu memiliki tinggi yang sama */
 }
 
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-input {
-  padding: 10px;
-  width: 80%;
-  max-width: 400px;
-  margin-top: 10px;
+.card-header {
+    padding: 20px;
+    background-color: #4F46E5; /* Indigo 600 */
+    color: white;
+}
+
+.card-header .original {
+    font-size: 2.25rem; /* 36px */
+    font-weight: 700;
+    line-height: 1.2;
+    word-break: break-word; /* Memastikan tulisan Jepang tidak terpotong */
+}
+
+.card-header .level {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    padding: 4px 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    display: inline-block;
+}
+
+.card-body {
+    padding: 20px;
+    flex-grow: 1; /* Membuat body kartu mengisi ruang yang tersedia */
+}
+
+.card-body .furigana {
+    font-size: 1.125rem; /* 18px */
+    color: #4B5563; /* Gray 600 */
+    margin-bottom: 12px;
+    word-break: break-word; /* Mencegah furigana terpotong */
+}
+
+.card-body .english {
+    font-size: 1rem; /* 16px */
+    color: #1F2937; /* Gray 800 */
+    line-height: 1.6;
+    word-wrap: break-word; /* Mencegah arti bahasa Inggris terpotong */
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #4F46E5;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4338CA;
 }

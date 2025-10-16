@@ -1,28 +1,51 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Belajar Kotoba Jepang</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChoKoto - Belajar Kosakata Bahasa Jepang</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <h1>📘 Belajar Kotoba Jepang</h1>
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-  <input type="text" id="search" placeholder="Cari kata..." />
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-indigo-600 font-jp">ChoKoto・ちょこっと</h1>
+            <div class="flex items-center space-x-4">
+                 <select id="jlptLevel" class="p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all">Semua Level</option>
+                    <option value="N1">N1</option>
+                    <option value="N2">N2</option>
+                    <option value="N3">N3</option>
+                    <option value="N4">N4</option>
+                    <option value="N5">N5</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Cari kosakata..." class="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+    </header>
 
-  <table id="kotobaTable">
-    <thead>
-      <tr>
-        <th>Kanji</th>
-        <th>Kana</th>
-        <th>Romaji</th>
-        <th>Arti</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <main class="container mx-auto p-6">
+        <div id="loading" class="text-center text-gray-500 mt-10">
+            <p>Memuat kosakata...</p>
+        </div>
+        <div id="card-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Kartu Kosakata akan dimasukkan di sini oleh JavaScript -->
+        </div>
+         <div id="no-results" class="hidden text-center text-gray-500 mt-10">
+            <p>Kosakata tidak ditemukan.</p>
+        </div>
+    </main>
 
-  <script src="script.js"></script>
+    <footer class="bg-white mt-12 py-6 text-center text-gray-600">
+        <p>&copy; 2024 ChoKoto. Dibuat untuk membantu Anda belajar bahasa Jepang.</p>
+    </footer>
+
+    <!-- Library PapaParse untuk membaca file CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
