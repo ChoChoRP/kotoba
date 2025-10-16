@@ -1,111 +1,145 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const cardContainer = document.getElementById("card-container");
-  const loadingIndicator = document.getElementById("loading");
-  const noResultsIndicator = document.getElementById("no-results");
+document.addEventListener("DOMContentLoaded", () => {
+  // === ELEMEN DOM ===
+  const kotobaList = document.getElementById("kotobaList");
   const searchInput = document.getElementById("searchInput");
-  const jlptLevelFilter = document.getElementById("jlptLevel");
-  let vocabularyData = []; // Untuk menyimpan semua data dari CSV
+  const levelFilter = document.getElementById("levelFilter");
+  const statusMessage = document.getElementById("statusMessage");
+  const darkModeToggle = document.getElementById("darkModeToggle");
 
-  /**
-   * Fungsi untuk mengambil dan mem-parsing data CSV.
-   * Menggunakan PapaParse untuk kemudahan.
-   */
-  function fetchData() {
-    Papa.parse("kotoba.csv", {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: function (results) {
-        loadingIndicator.style.display = "none"; // Sembunyikan loading
-        vocabularyData = results.data;
-        displayCards(vocabularyData); // Tampilkan semua kartu saat pertama kali dimuat
-      },
-      error: function (err) {
-        loadingIndicator.textContent = "Gagal memuat data. Silakan coba lagi.";
-        console.error("Error fetching or parsing CSV:", err);
-      },
-    });
-  }
+  // === STATE ===
+  let allKotoba = [];
+  let currentLevel = "all";
+  let currentSearch = "";
 
-  /**
-   * Fungsi untuk menampilkan kartu kosakata ke dalam container.
-   * @param {Array} data - Array objek kosakata yang akan ditampilkan.
-   */
-  function displayCards(data) {
-    cardContainer.innerHTML = ""; // Kosongkan container sebelum menampilkan data baru
-    if (data.length === 0) {
-      noResultsIndicator.style.display = "block"; // Tampilkan pesan 'tidak ditemukan'
+  // === DARK MODE ===
+  const sunIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
+  const moonIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`;
+
+  const applyTheme = (isDark) => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      darkModeToggle.innerHTML = sunIcon;
     } else {
-      noResultsIndicator.style.display = "none"; // Sembunyikan pesan
+      document.documentElement.classList.remove("dark");
+      darkModeToggle.innerHTML = moonIcon;
     }
+  };
 
-    data.forEach((word) => {
-      // Membuat elemen kartu
-      const card = document.createElement("div");
-      card.className = "card";
+  // Cek preferensi tema dari localStorage atau sistem
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  let isDarkMode =
+    localStorage.getItem("theme") === "dark" ||
+    (localStorage.getItem("theme") === null && prefersDark);
+  applyTheme(isDarkMode);
 
-      // Membuat konten kartu
-      // Sanitasi sederhana untuk mencegah masalah keamanan dasar, meskipun data dari CSV Anda sendiri.
-      const original = escapeHTML(word.Original);
-      const furigana = escapeHTML(word.Furigana);
-      const english = escapeHTML(word.English);
-      const level = escapeHTML(word["JLPT Level"]);
+  darkModeToggle.addEventListener("click", () => {
+    isDarkMode = !isDarkMode;
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    applyTheme(isDarkMode);
+  });
 
-      card.innerHTML = `
-                <div class="card-header">
-                    <div class="flex justify-between items-start">
-                        <h2 class="original font-jp">${original}</h2>
-                        <span class="level">${level}</span>
+  // === FUNGSI PARSING CSV ===
+  const parseCSV = (text) => {
+    const lines = text.trim().split("\n");
+    const headers = lines[0].split(",").map((h) => h.trim());
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      // Regex untuk memisahkan CSV dengan benar, menangani koma di dalam kutipan
+      const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+
+      if (values.length === headers.length) {
+        const entry = {};
+        headers.forEach((header, index) => {
+          let value = values[index] || "";
+          // Menghapus kutipan di awal dan akhir jika ada
+          if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.slice(1, -1);
+          }
+          entry[header] = value.trim();
+        });
+        data.push(entry);
+      }
+    }
+    return data;
+  };
+
+  // === FUNGSI RENDER DAN FILTER ===
+  const renderKotoba = () => {
+    kotobaList.innerHTML = "";
+    statusMessage.style.display = "none";
+
+    // 1. Filter berdasarkan level
+    let filteredByLevel =
+      currentLevel === "all"
+        ? allKotoba
+        : allKotoba.filter((k) => k["JLPT Level"] === currentLevel);
+
+    // 2. Filter berdasarkan pencarian
+    const searchTerm = currentSearch.toLowerCase();
+    const finalFiltered = filteredByLevel.filter((k) => {
+      return (
+        k.Original?.toLowerCase().includes(searchTerm) ||
+        k.Furigana?.toLowerCase().includes(searchTerm) ||
+        k.English?.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    if (finalFiltered.length === 0) {
+      statusMessage.innerHTML = "<p>Kosakata tidak ditemukan.</p>";
+      statusMessage.style.display = "block";
+    } else {
+      finalFiltered.forEach((kotoba) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-original">${kotoba.Original || ""}</h3>
+                        <p class="card-furigana">${kotoba.Furigana || ""}</p>
                     </div>
-                </div>
-                <div class="card-body">
-                    <p class="furigana font-jp">${furigana}</p>
-                    <p class="english">${english}</p>
-                </div>
-            `;
+                    <p class="card-english">${kotoba.English || ""}</p>
+                    <div class="card-footer">
+                        <span class="card-level">${
+                          kotoba["JLPT Level"] || "N/A"
+                        }</span>
+                    </div>
+                `;
+        kotobaList.appendChild(card);
+      });
+    }
+  };
 
-      cardContainer.appendChild(card);
-    });
-  }
+  // === EVENT LISTENERS ===
+  searchInput.addEventListener("input", (e) => {
+    currentSearch = e.target.value;
+    renderKotoba();
+  });
 
-  /**
-   * Fungsi untuk melakukan filter dan pencarian data.
-   */
-  function filterAndSearch() {
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    const selectedLevel = jlptLevelFilter.value;
+  levelFilter.addEventListener("click", (e) => {
+    if (e.target.classList.contains("level-btn")) {
+      levelFilter.querySelector(".active")?.classList.remove("active");
+      e.target.classList.add("active");
+      currentLevel = e.target.dataset.level;
+      renderKotoba();
+    }
+  });
 
-    const filteredData = vocabularyData.filter((word) => {
-      const matchesSearch =
-        word.Original.toLowerCase().includes(searchTerm) ||
-        word.Furigana.toLowerCase().includes(searchTerm) ||
-        word.English.toLowerCase().includes(searchTerm);
+  // === INISIALISASI ===
+  const init = async () => {
+    try {
+      const response = await fetch("kotoba.csv");
+      if (!response.ok) {
+        throw new Error(`Gagal memuat file: ${response.statusText}`);
+      }
+      const csvText = await response.text();
+      allKotoba = parseCSV(csvText);
+      renderKotoba();
+    } catch (error) {
+      console.error("Error:", error);
+      statusMessage.innerHTML = `<p>Gagal memuat data kosakata. Pastikan file 'kotoba.csv' ada di folder yang sama.</p>`;
+      statusMessage.style.display = "block";
+    }
+  };
 
-      const matchesLevel =
-        selectedLevel === "all" || word["JLPT Level"] === selectedLevel;
-
-      return matchesSearch && matchesLevel;
-    });
-
-    displayCards(filteredData);
-  }
-
-  /**
-   * Fungsi untuk "membersihkan" teks agar terhindar dari HTML injection.
-   * @param {string} str - String yang ingin dibersihkan.
-   * @returns {string} String yang sudah bersih.
-   */
-  function escapeHTML(str) {
-    if (!str) return "";
-    const p = document.createElement("p");
-    p.textContent = str;
-    return p.innerHTML;
-  }
-
-  // Menambahkan event listener untuk input pencarian dan filter level
-  searchInput.addEventListener("input", filterAndSearch);
-  jlptLevelFilter.addEventListener("change", filterAndSearch);
-
-  // Memulai proses pengambilan data
-  fetchData();
+  init();
 });
