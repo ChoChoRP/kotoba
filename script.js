@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Cek preferensi tema dari localStorage atau sistem
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   let isDarkMode =
     localStorage.getItem("theme") === "dark" ||
@@ -45,14 +44,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
-      // Regex untuk memisahkan CSV dengan benar, menangani koma di dalam kutipan
       const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
-
       if (values.length === headers.length) {
         const entry = {};
         headers.forEach((header, index) => {
           let value = values[index] || "";
-          // Menghapus kutipan di awal dan akhir jika ada
           if (value.startsWith('"') && value.endsWith('"')) {
             value = value.slice(1, -1);
           }
@@ -64,18 +60,16 @@ document.addEventListener("DOMContentLoaded", () => {
     return data;
   };
 
-  // === FUNGSI RENDER DAN FILTER ===
+  // === FUNGSI RENDER DAN FILTER (VERSI TABEL) ===
   const renderKotoba = () => {
     kotobaList.innerHTML = "";
     statusMessage.style.display = "none";
 
-    // 1. Filter berdasarkan level
     let filteredByLevel =
       currentLevel === "all"
         ? allKotoba
         : allKotoba.filter((k) => k["JLPT Level"] === currentLevel);
 
-    // 2. Filter berdasarkan pencarian
     const searchTerm = currentSearch.toLowerCase();
     const finalFiltered = filteredByLevel.filter((k) => {
       return (
@@ -88,24 +82,41 @@ document.addEventListener("DOMContentLoaded", () => {
     if (finalFiltered.length === 0) {
       statusMessage.innerHTML = "<p>Kosakata tidak ditemukan.</p>";
       statusMessage.style.display = "block";
+      kotobaList.style.display = "none";
     } else {
+      statusMessage.style.display = "none";
+      kotobaList.style.display = "block";
+
+      const table = document.createElement("table");
+      table.className = "kotoba-table";
+
+      table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Kosakata</th>
+                        <th>Furigana</th>
+                        <th>Arti</th>
+                        <th>Level</th>
+                    </tr>
+                </thead>
+            `;
+
+      const tbody = document.createElement("tbody");
       finalFiltered.forEach((kotoba) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-                    <div class="card-header">
-                        <h3 class="card-original">${kotoba.Original || ""}</h3>
-                        <p class="card-furigana">${kotoba.Furigana || ""}</p>
-                    </div>
-                    <p class="card-english">${kotoba.English || ""}</p>
-                    <div class="card-footer">
-                        <span class="card-level">${
-                          kotoba["JLPT Level"] || "N/A"
-                        }</span>
-                    </div>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                    <td class="original-col">${kotoba.Original || ""}</td>
+                    <td>${kotoba.Furigana || ""}</td>
+                    <td>${kotoba.English || ""}</td>
+                    <td><span class="level-tag">${
+                      kotoba["JLPT Level"] || "N/A"
+                    }</span></td>
                 `;
-        kotobaList.appendChild(card);
+        tbody.appendChild(row);
       });
+
+      table.appendChild(tbody);
+      kotobaList.appendChild(table);
     }
   };
 

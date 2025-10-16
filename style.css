@@ -130,67 +130,50 @@ body {
     color: white;
 }
 
-/* Grid Kosakata */
-.kotoba-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-/* Kartu Kosakata */
-.card {
+/* Container dan Styling Tabel */
+.table-container {
     background-color: var(--card-bg-light);
     border-radius: 0.75rem;
-    padding: 1.5rem;
     box-shadow: var(--shadow-light);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: transform 0.2s, box-shadow 0.2s;
-    word-wrap: break-word; /* Memastikan teks tidak keluar dari kartu */
-    overflow: hidden; /* Mencegah konten keluar */
+    overflow-x: auto; /* Memastikan tabel bisa di-scroll horizontal di layar kecil */
+}
+
+.kotoba-table {
+    width: 100%;
+    border-collapse: collapse;
     animation: fadeIn 0.5s ease-in-out;
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+.kotoba-table th,
+.kotoba-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
 }
 
-html.dark .card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+.kotoba-table thead th {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: var(--bg-light);
 }
 
-.card-header {
-    margin-bottom: 1rem;
+.kotoba-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.card-original {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0;
+.kotoba-table tbody tr:hover {
+    background-color: var(--bg-light);
+}
+
+.kotoba-table .original-col {
+    font-weight: 600;
+    font-size: 1.125rem;
     color: var(--primary-color);
 }
 
-.card-furigana {
-    font-size: 1rem;
-    color: var(--text-light);
-    opacity: 0.8;
-    margin: 0.25rem 0 0;
-}
-
-.card-english {
-    font-size: 1.125rem;
-    margin: 0;
-    flex-grow: 1; /* Membuat arti bahasa Inggris mengisi ruang yang tersedia */
-}
-
-.card-footer {
-    margin-top: 1rem;
-    text-align: right;
-}
-
-.card-level {
+.level-tag {
     display: inline-block;
     background-color: var(--bg-light);
     color: var(--text-light);
@@ -204,6 +187,7 @@ html.dark .card:hover {
 .status-message {
     text-align: center;
     margin-top: 2rem;
+    padding: 2rem;
     font-size: 1.25rem;
     color: var(--text-light);
     opacity: 0.7;
@@ -213,11 +197,9 @@ html.dark .card:hover {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
